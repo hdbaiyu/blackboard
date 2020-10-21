@@ -1,7 +1,12 @@
 {
+  "author":{
+     "name" : "baiyu",
+      "email" : "baiyu@ihayun.com",
+      "url" : "http://github.com/hdbaiyu"
+  },
   "name": "blackboard",
-  "version": "0.0.1",
-  "private": true,
+  "version": "0.0.3",
+  "private": false,
   "scripts": {
     "js": "js or vue, react"
   },
