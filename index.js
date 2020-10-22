@@ -61,7 +61,7 @@ class ClassBoard {
     const board = document.getElementById('board')
     canvas.setAttribute('class', 'pencil')
     canvas.setAttribute('width', board.clientWidth)
-    canvas.setAttribute('height', board.clientHeight - 90)
+    canvas.setAttribute('height', board.clientHeight - 80)
     const context = canvas.getContext("2d");
     context.mozImageSmoothingEnabled = false;
     context.webkitImageSmoothingEnabled = false;
@@ -72,7 +72,7 @@ class ClassBoard {
     // context.fillRect(0,0,this.state.board.clientWidth,this.state.board.clientHeight - 90);
     Object.assign(this.state.board,{
       drawWidth: board.clientWidth, //canvas 容器宽
-      drawHeigth: board.clientHeight -90, //canvas 容器高
+      drawHeigth: board.clientHeight -80, //canvas 容器高
       canvas: canvas, //canvas dom
       context: context //canvas 对象
     })
@@ -110,7 +110,6 @@ class ClassBoard {
   }
   //画线处理
   dealPoint(x,y,state){
-    console.log('this.state.bodies', this.state.beginPoint)
     const len = this.state.points.length;
     if(state != -1 && len > 1){
       const before = this.state.points[len - 1],end={
@@ -166,7 +165,6 @@ class ClassBoard {
     this.canvasMoveUse = true;
     e.stopPropagation();
     e.preventDefault()
-    console.log('....this', this)
     if(e instanceof TouchEvent){
       this.dealPoint(e.touches[0].clientX,e.touches[0].clientY,-1)
     }else{
@@ -216,14 +214,14 @@ class ClassBoard {
   localSaveCanvas() {
       // const imgData = this.state.board.canvas.toDataURL({format: 'png', quality:1, width:200, height:400});
       // const strDataURI = imgData.substr(22, imgData.length);
-      const imageData =  this.state.board.canvas.toDataURL('image/png')
+      const imageData = this.state.board.canvas.toDataURL('image/png')
       window.postMessage(imageData, window.location.origin )
   }
   //保存canvas图片
   saveCanvas(callback) {
     const baseImg = this.state.board.canvas.toDataURL("image/png");
     if (this.state.changeBard) {
-      // todo: 新建顺序有问题
+     
       if (this.state.boardIndex === this.state.boardlist.length - 1) {
         this.state.boardlist.push({img:baseImg})
       } else {
@@ -240,11 +238,13 @@ class ClassBoard {
     }
 
     // document.getElementById('img').src = baseImg
-    console.log('boardlist', this.state.boardlist, this.state.boardIndex)
+    // reset board
+    this.state.boardlist = []
+    this.state.boardIndex = 0
+    console.log('save canvas', this.state.boardlist, this.state.boardIndex)
   }
    //橡皮檫
   earseLine(start, controlPoint, endPoint) {
-    console.log('xxx', start.x, start.y)
     this.state.board.context.beginPath();
     this.state.board.context.clearRect(
       start.x,
@@ -283,25 +283,48 @@ class ClassBoard {
     return 'red';
   }
   // 插入图片
-  openImage(e) {
-    console.log('e', e.target.files[0])
-    const _this = this
-    const reader = new FileReader();
-    reader.onload = function(e){
+  openImage(file) {
+    console.log('insert--imageFile', file)
+    // const reader = new FileReader();
+    // reader.onload = function(e){
       // get_data(this.result);
-        console.log('resxxx',e.target.result);
-        const image = new Image()
-        image.src = e.target.result
-        image.onload =() =>{
-          const imageLeft = (_this.state.board.drawWidth - image.width)/2
-          const imageTop = (_this.state.board.drawHeigth - image.height)/2
-          console.log('image', imageLeft, imageTop)
-          _this.state.board.context.drawImage( image, imageLeft, imageTop, image.width, image.height);
+      // console.log('resxxx',e.target.result);
+      const image = new Image()
+      image.src = file.fileUrl
+      image.setAttribute("crossOrigin",'Anonymous')
+        image.onload =() => {
+          let widthScale, heightScale = 1
+          let tempWidth = image.width
+          let tempHeight = image.height
 
+          if (image.width > this.state.board.drawWidth) {
+            // tempWidth = this.state.board.drawWidth
+            // tempHeight = (image.height * this.state.board.drawWidth) / image.width
+            // widthScale = Math.floor((this.state.board.drawWidth / image.width) *10 ) /10
+             let oldwidth = image.width;
+              tempHeight = image.height * (this.state.board.drawWidth/oldwidth);
+              tempWidth = this.state.board.drawWidth;
+            // myimg.width = maxwidth;
+      
+          }
+          if (tempHeight > this.state.board.drawHeigth) {
+            // heightScale = Math.floor((this.state.board.drawHeigth / image.height) *10 ) /10
+            // image.height = image.height * (Math.floor((image.width / image.height) *10 ) /10)
+            tempHeight = this.state.board.drawHeigth
+            // tempWidth = (image.width * this.state.board.drawHeigth) / image.height
+            // let oldheight = image.height;
+            // tempWidth = image.width * (this.state.board.drawHeigth/oldheight);
+            // tempHeight = this.state.board.drawHeigth;
+          }
+          const imageLeft = (this.state.board.drawWidth - image.width *widthScale)/2
+          const imageTop = (this.state.board.drawHeigth - image.height *heightScale)/2
+          console.log('image', tempWidth, tempHeight)
+          this.state.board.context.drawImage( image, 0, 0, tempWidth, tempHeight);
         }
-    }
-    reader.readAsDataURL(e.target.files[0]);
+    // }
+    // reader.readAsDataURL([file]);
   }
+
   // 新建
   createBoard() {
     this.state.boardIndex +=1
@@ -309,7 +332,6 @@ class ClassBoard {
    
     this.saveCanvas()
     this.clearCanvas()
-    console.log('boardlist', this.state.boardlist)
   }
   // 翻页
   paging(num) {
@@ -324,12 +346,10 @@ class ClassBoard {
       this.state.changeBard = false
       this.saveCanvas()
       this.state.boardIndex --
-      console.log('inxx11', this.state.boardIndex)
       const image = new Image()
       image.src = this.state.boardlist[this.state.boardIndex].img
       image.onload =() =>{
         this.clearCanvas()
-        console.log(this.state.board.drawWidth)
         this.state.board.context.drawImage( image, 0, 0, image.width, image.height);
       }
       
@@ -338,7 +358,6 @@ class ClassBoard {
     this.state.changeBard = false
     this.saveCanvas()
     this.state.boardIndex ++
-    console.log('inx===', this.state.boardIndex)
 
     const nextImage = new Image()
     nextImage.src = this.state.boardlist[this.state.boardIndex].img
@@ -369,7 +388,6 @@ class ClassBoard {
         const len = this.state.menus.length
         const lasetItem = this.state.menus.slice(len -1)
         const startItem = this.state.baseMenus.slice(0,len -1)
-        console.log('lasetItem',  this.state.menus, lasetItem)
         // this.menus = Object.assign([], this.menus,this.menuPen,lasetItem)
          this.state.bodies.isEraser = false
         if (!this.isOpen) {
