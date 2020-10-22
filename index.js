@@ -214,8 +214,10 @@ class ClassBoard {
   }
   // 本地保存图片
   localSaveCanvas() {
-      const imgData = this.state.board.canvas.toDataURL({format: 'png', quality:1, width:200, height:400});
-      const strDataURI = imgData.substr(22, imgData.length);
+      // const imgData = this.state.board.canvas.toDataURL({format: 'png', quality:1, width:200, height:400});
+      // const strDataURI = imgData.substr(22, imgData.length);
+      const imageData =  this.state.board.canvas.toDataURL('image/png')
+      window.postMessage(imageData, window.location.origin )
   }
   //保存canvas图片
   saveCanvas(callback) {
@@ -238,7 +240,7 @@ class ClassBoard {
     }
 
     // document.getElementById('img').src = baseImg
-    console.log('boardlist', this.boardlist, this.boardIndex)
+    console.log('boardlist', this.state.boardlist, this.state.boardIndex)
   }
    //橡皮檫
   earseLine(start, controlPoint, endPoint) {
@@ -358,7 +360,7 @@ class ClassBoard {
         return
       case 3:
        this.state.bodies.isEraser = true;
-       canvas.setAttribute('class','eraser')
+       document.getElementById('canvas').setAttribute('class','eraser')
        return;
       case 4:
         this.clearCanvas()
@@ -377,12 +379,12 @@ class ClassBoard {
           this.state.menus = this.state.baseMenus
           this.isOpen = false;
         }
-        canvas.setAttribute('class','pencil')
+        document.getElementById('canvas').setAttribute('class','pencil')
         this.appenedMenus()
         return;
       }
       case 6:// 保存
-        this.saveCanvas()
+        this.localSaveCanvas()
         return;
       case 7:
         this.setColor('red')
