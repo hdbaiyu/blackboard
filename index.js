@@ -2,6 +2,7 @@
 //  黑板
 class ClassBoard {
   constructor() {
+    this.version = '0.0.8'
     this.state = {
       openFile: false,
       beginPoint: {},
@@ -23,7 +24,7 @@ class ClassBoard {
         {text: "保存",key: 6, className:"hyfont baocun"},
       ],
       bodies: { //点对象
-        color: 'red', //颜色
+        color: 'white', //颜色
         courseWareNum: '', //课件页数
         drawState: -1, //是否画笔
         isBord: 1, //黑板还是课件
@@ -50,6 +51,7 @@ class ClassBoard {
       changeBard: true, // 是否可以新建黑板
     }
   }
+
   touchMove () {
     const canvas = document.getElementById('canvas')
     canvas.addEventListener('touchstart', this.canvasDown.bind(this), false)
@@ -67,7 +69,8 @@ class ClassBoard {
     context.webkitImageSmoothingEnabled = false;
     context.msImageSmoothingEnabled = false;
     context.imageSmoothingEnabled = false;
-    context.fillStyle = '#333333'
+    context.fillStyle = '#333'
+    context.fillRect(0,0,board.clientWidth,board.clientHeight);
     this.state.baseMenus = this.state.menus
     // context.fillRect(0,0,this.state.board.clientWidth,this.state.board.clientHeight - 90);
     Object.assign(this.state.board,{
@@ -85,7 +88,9 @@ class ClassBoard {
     if (hasUl) {
       board.removeChild(hasUl)
     }
+    const {boardIndex, boardlist} = this.state
     const menus = document.createElement('ul')
+    console.log('boardIndex, boardlist111111111-------:', boardIndex, boardlist.length)
     menus.setAttribute('id','boardMenus')
     const lis = this.state.menus.map(menu => {
       let li = document.createElement('li')
@@ -98,6 +103,22 @@ class ClassBoard {
       divText.className = 'menu-text'
       div.appendChild(span)
       li.className = 'item-li'
+      if (menu.key ===1) {
+        if (boardlist.length === 0 || boardIndex ===0) {
+          li.className = 'item-li disabled'
+        }
+      }
+      if (menu.key ===2) {
+        if(boardlist.length === 0) {
+          li.className = 'item-li disabled'
+        }
+        if(boardlist.length <=1) {
+          li.className = 'item-li disabled'
+        }
+        if(boardIndex === boardlist.length || (boardlist.length - boardIndex) ===1) {
+          li.className = 'item-li disabled'
+        }
+      }
       li.appendChild(div)
       li.appendChild(divText)
       li.addEventListener('click',()=> this.boardTool(menu.key))
@@ -207,40 +228,55 @@ class ClassBoard {
     this.state.bodies.pointX=Math.ceil(this.state.bodies.pointX*this.state.rate);
     this.state.bodies.pointY=Math.ceil(this.state.bodies.pointY*this.state.rate);
   }
+  // 清空数据
+  closeBoard() {
+    this.clearCanvas()
+    this.state.boardIndex = 0
+    this.state.boardlist = []
+  }
   clearCanvas() {
     this.state.board.canvas.height = this.state.board.canvas.height;
   }
   // 本地保存图片
   localSaveCanvas() {
+    const baseImg = this.state.board.canvas.toDataURL("image/png");
+    // this.state.boardlist.push()
+    const {boardIndex } = this.state
+    if (boardIndex === 0) {
+      this.state.boardlist.push(baseImg)
+    } else {
+      this.state.boardlist.splice(boardIndex, 1, baseImg)
+    }
       // const imgData = this.state.board.canvas.toDataURL({format: 'png', quality:1, width:200, height:400});
       // const strDataURI = imgData.substr(22, imgData.length);
-      const imageData = this.state.board.canvas.toDataURL('image/png')
-      window.postMessage(imageData, window.location.origin )
+      // const imageData = this.state.board.canvas.toDataURL('image/png')
+    window.postMessage(this.state.boardlist, window.location.origin )
+    this.state.boardlist = []
+    this.state.boardIndex = 0
   }
   //保存canvas图片
-  saveCanvas(callback) {
+  saveCanvas() {
     const baseImg = this.state.board.canvas.toDataURL("image/png");
     if (this.state.changeBard) {
      
-      if (this.state.boardIndex === this.state.boardlist.length - 1) {
-        this.state.boardlist.push({img:baseImg})
+      if (this.state.boardIndex === this.state.boardlist.length -1) {
+        this.state.boardlist.push(baseImg)
       } else {
         const index = this.state.boardIndex
         // todo: 0 =》 1
-        this.state.boardlist.splice(index, 0,{img: baseImg})
+        this.state.boardlist.splice(index, 0,baseImg)
       }
       // ++ this.boardIndex
     } else {
       
       const index = this.state.boardIndex
       // todo: 0 =》 1
-      this.state.boardlist.splice(index, 1,{img: baseImg})
+      this.state.boardlist.splice(index, 1, baseImg)
     }
 
     // document.getElementById('img').src = baseImg
     // reset board
-    this.state.boardlist = []
-    this.state.boardIndex = 0
+    
     console.log('save canvas', this.state.boardlist, this.state.boardIndex)
   }
    //橡皮檫
@@ -336,9 +372,11 @@ class ClassBoard {
   // 翻页
   paging(num) {
     if (this.state.boardIndex >= this.state.boardlist.length -1 && num != 1) {
+      console.log('没有下一页了')
       return
     }
     if (this.state.boardIndex <= 0 && num !=2) {
+      console.log('没有上一页了')
       return
     }
     if (num ===1) {
@@ -347,7 +385,7 @@ class ClassBoard {
       this.saveCanvas()
       this.state.boardIndex --
       const image = new Image()
-      image.src = this.state.boardlist[this.state.boardIndex].img
+      image.src = this.state.boardlist[this.state.boardIndex]
       image.onload =() =>{
         this.clearCanvas()
         this.state.board.context.drawImage( image, 0, 0, image.width, image.height);
@@ -360,7 +398,7 @@ class ClassBoard {
     this.state.boardIndex ++
 
     const nextImage = new Image()
-    nextImage.src = this.state.boardlist[this.state.boardIndex].img
+    nextImage.src = this.state.boardlist[this.state.boardIndex]
     nextImage.onload =() =>{
     this.clearCanvas()
     this.state.board.context.drawImage( nextImage, 0, 0, nextImage.width, nextImage.height);
@@ -372,18 +410,18 @@ class ClassBoard {
       case 0:
         // this.openImage()
         this.createBoard()
-        return
+        break
       case 1:
       case 2:
         this.paging(index)
-        return
+        break
       case 3:
        this.state.bodies.isEraser = true;
        document.getElementById('canvas').setAttribute('class','eraser')
-       return;
+       break;
       case 4:
         this.clearCanvas()
-        return;
+        break;
       case 5: {
         const len = this.state.menus.length
         const lasetItem = this.state.menus.slice(len -1)
@@ -398,33 +436,36 @@ class ClassBoard {
           this.isOpen = false;
         }
         document.getElementById('canvas').setAttribute('class','pencil')
-        this.appenedMenus()
-        return;
+        // this.appenedMenus()
+        break;
       }
       case 6:// 保存
         this.localSaveCanvas()
         return;
       case 7:
         this.setColor('red')
-        return
+        break
       case 8:
         this.setColor('white')
-        return
+        break
       case 9:
         this.setColor('green')
-        return
+        break
       case 10: 
         this.state.bodies.lineSize= 1
-        return
+        break
       case 11: 
         this.state.bodies.lineSize = 3
-        return
+        break
       case 12: 
         this.state.bodies.lineSize = 5
         return
       default:
-        return
+        break
     }
+    setTimeout(() =>{
+      this.appenedMenus()
+    },300)
   }
   
 }
