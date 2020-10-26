@@ -2,7 +2,7 @@
 //  黑板
 class ClassBoard {
   constructor() {
-    this.version = '0.0.8'
+    this.version = '0.0.9'
     this.state = {
       openFile: false,
       beginPoint: {},
@@ -51,7 +51,6 @@ class ClassBoard {
       changeBard: true, // 是否可以新建黑板
     }
   }
-
   touchMove () {
     const canvas = document.getElementById('canvas')
     canvas.addEventListener('touchstart', this.canvasDown.bind(this), false)
@@ -103,6 +102,9 @@ class ClassBoard {
       divText.className = 'menu-text'
       div.appendChild(span)
       li.className = 'item-li'
+      if (menu.key ===0 && boardlist.length > 9) {
+        li.className = 'item-li disabled'
+      }
       if (menu.key ===1) {
         if (boardlist.length === 0 || boardIndex ===0) {
           li.className = 'item-li disabled'
@@ -365,7 +367,10 @@ class ClassBoard {
   createBoard() {
     this.state.boardIndex +=1
     this.state.changeBard = true
-   
+    // 最多十页
+    if (this.state.boardIndex >9) {
+      return
+    }
     this.saveCanvas()
     this.clearCanvas()
   }

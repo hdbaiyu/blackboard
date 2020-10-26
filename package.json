@@ -5,7 +5,7 @@
       "url" : "http://github.com/hdbaiyu"
   },
   "name": "blackboard",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "private": false,
   "scripts": {
     "js": "js or vue, react"
