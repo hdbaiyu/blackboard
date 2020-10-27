@@ -2,18 +2,11 @@
 //  黑板
 class ClassBoard {
   constructor() {
-    this.version = '0.0.9'
+    this.version = '0.0.10'
     this.state = {
       openFile: false,
       beginPoint: {},
-      menuPen: [
-        {text: "红", key: 7, className:"span-icon icon-red"},
-        {text: "白", key: 8, className:"span-icon icon-white"},
-        {text: "绿", key: 9, className:"span-icon icon-green"},
-        {text: "细", key: 10, className:"line-icon icon-fine"},
-        {text: "中", key: 11, className:"line-icon icon-center"},
-        {text: "粗", key: 12, className:"line-icon icon-thick"},
-      ],
+      menuPen: [],
       menus: [
         {text: "新建",key: 0, className:"hyfont xinjianyiye"},
         {text: "上一页",key: 1,className:"hyfont ketang-shangyiye"},
@@ -21,6 +14,16 @@ class ClassBoard {
         {text: "橡皮",key: 3,className:"hyfont ketang-cachu"},
         {text: "清屏", key: 4, className:"hyfont ketang-qingkong"},
         {text: "画笔", key: 5, className:"hyfont ketang-huabi"},
+        {text: "保存",key: 6, className:"hyfont baocun"},
+      ],
+      baseMenus: [
+        {text: "画笔", key: 5, className:"hyfont ketang-huabi"},
+        {text: "红", key: 7, className:"span-icon icon-red"},
+        {text: "白", key: 8, className:"span-icon icon-white"},
+        {text: "绿", key: 9, className:"span-icon icon-green"},
+        {text: "细", key: 10, className:"line-icon icon-fine"},
+        {text: "中", key: 11, className:"line-icon icon-center"},
+        {text: "粗", key: 12, className:"line-icon icon-thick"},
         {text: "保存",key: 6, className:"hyfont baocun"},
       ],
       bodies: { //点对象
@@ -70,7 +73,8 @@ class ClassBoard {
     context.imageSmoothingEnabled = false;
     context.fillStyle = '#333'
     context.fillRect(0,0,board.clientWidth,board.clientHeight);
-    this.state.baseMenus = this.state.menus
+    this.state.menuPen = this.state.menus
+    this.isOpen = false
     // context.fillRect(0,0,this.state.board.clientWidth,this.state.board.clientHeight - 90);
     Object.assign(this.state.board,{
       drawWidth: board.clientWidth, //canvas 容器宽
@@ -91,7 +95,7 @@ class ClassBoard {
     const menus = document.createElement('ul')
     console.log('boardIndex, boardlist111111111-------:', boardIndex, boardlist.length)
     menus.setAttribute('id','boardMenus')
-    const lis = this.state.menus.map(menu => {
+    const lis = this.state.menuPen.map(menu => {
       let li = document.createElement('li')
       let div = document.createElement('div')
       let divText = document.createElement('div')
@@ -241,7 +245,7 @@ class ClassBoard {
   }
   // 本地保存图片
   localSaveCanvas() {
-    const baseImg = this.state.board.canvas.toDataURL("image/png");
+    const baseImg = this.state.board.canvas.toDataURL("image/png", 1.0);
     // this.state.boardlist.push()
     const {boardIndex } = this.state
     if (boardIndex === 0) {
@@ -430,14 +434,15 @@ class ClassBoard {
       case 5: {
         const len = this.state.menus.length
         const lasetItem = this.state.menus.slice(len -1)
-        const startItem = this.state.baseMenus.slice(0,len -1)
+        // const startItem = this.state.baseMenus.slice(0,len -1)
         // this.menus = Object.assign([], this.menus,this.menuPen,lasetItem)
          this.state.bodies.isEraser = false
         if (!this.isOpen) {
-          this.state.menus = [{text: "画笔", key: 5, className:"hyfont ketang-huabi"}, ...this.state.menuPen, ...lasetItem]
+          this.state.menuPen = this.state.baseMenus
           this.isOpen = true;
         } else {
-          this.state.menus = this.state.baseMenus
+          // [{text: "画笔", key: 5, className:"hyfont ketang-huabi"}, ...this.state.menuPen, ...lasetItem]
+          this.state.menuPen = this.state.menus
           this.isOpen = false;
         }
         document.getElementById('canvas').setAttribute('class','pencil')
