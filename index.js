@@ -2,7 +2,7 @@
 //  黑板
 class ClassBoard {
   constructor() {
-    this.version = '0.0.10'
+    this.version = '0.0.11'
     this.state = {
       openFile: false,
       beginPoint: {},
@@ -93,7 +93,6 @@ class ClassBoard {
     }
     const {boardIndex, boardlist} = this.state
     const menus = document.createElement('ul')
-    console.log('boardIndex, boardlist111111111-------:', boardIndex, boardlist.length)
     menus.setAttribute('id','boardMenus')
     const lis = this.state.menuPen.map(menu => {
       let li = document.createElement('li')
@@ -242,10 +241,13 @@ class ClassBoard {
   }
   clearCanvas() {
     this.state.board.canvas.height = this.state.board.canvas.height;
+    const board = document.getElementById('board')
+    this.state.board.context.fillStyle = '#333'
+    this.state.board.context.fillRect(0,0,board.clientWidth,board.clientHeight);
   }
   // 本地保存图片
   localSaveCanvas() {
-    const baseImg = this.state.board.canvas.toDataURL("image/png", 1.0);
+    const baseImg = this.state.board.canvas.toDataURL("image/jpeg", 1.0);
     // this.state.boardlist.push()
     const {boardIndex } = this.state
     if (boardIndex === 0) {
@@ -262,7 +264,7 @@ class ClassBoard {
   }
   //保存canvas图片
   saveCanvas() {
-    const baseImg = this.state.board.canvas.toDataURL("image/png");
+    const baseImg = this.state.board.canvas.toDataURL("image/jpeg", 1.0);
     if (this.state.changeBard) {
      
       if (this.state.boardIndex === this.state.boardlist.length -1) {
@@ -475,7 +477,7 @@ class ClassBoard {
     }
     setTimeout(() =>{
       this.appenedMenus()
-    },300)
+    },200)
   }
   
 }
