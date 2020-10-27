@@ -2,7 +2,7 @@
 //  黑板
 class ClassBoard {
   constructor() {
-    this.version = '0.0.11'
+    this.version = '0.0.12'
     this.state = {
       openFile: false,
       beginPoint: {},
@@ -52,6 +52,11 @@ class ClassBoard {
       boardlist: [], //黑板 预览数据
       boardIndex: 0, // 黑板数量索引
       changeBard: true, // 是否可以新建黑板
+    }
+    if((navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i))) {
+      this.isMobile = true
+    } else {
+      this.isMobile = false
     }
   }
   touchMove () {
@@ -124,13 +129,15 @@ class ClassBoard {
           li.className = 'item-li disabled'
         }
       }
+      if (menu.key ===5) {
+        div.style = `color: ${this.state.bodies.color}` 
+      }
       li.appendChild(div)
       li.appendChild(divText)
       li.addEventListener('click',()=> this.boardTool(menu.key))
       menus.appendChild(li)
       // return li
     })
-    console.log('li', lis)
     board.appendChild(menus)
 
   }
@@ -191,7 +198,15 @@ class ClassBoard {
     this.canvasMoveUse = true;
     e.stopPropagation();
     e.preventDefault()
-    if(e instanceof TouchEvent){
+    let hasEvent
+    try {
+      if (e instanceof TouchEvent) {
+        hasEvent = true
+      }
+    } catch (error) {
+      hasEvent = false
+    }
+    if(hasEvent){
       this.dealPoint(e.touches[0].clientX,e.touches[0].clientY,-1)
     }else{
       this.dealPoint(e.offsetX,e.offsetY,-1)
@@ -201,7 +216,15 @@ class ClassBoard {
   canvasMove(e) {
     e.stopPropagation();
     e.preventDefault()
-    if(e instanceof TouchEvent){
+    let hasEvent
+    try {
+      if (e instanceof TouchEvent) {
+        hasEvent = true
+      }
+    } catch (error) {
+      hasEvent = false
+    }
+    if(hasEvent){
       this.dealPoint(e.touches[0].clientX,e.touches[0].clientY,0)
     }else{
       if (e.buttons == 1 && this.canvasMoveUse) {
@@ -215,7 +238,15 @@ class ClassBoard {
   canvasUp(e) {
     e.stopPropagation();
     e.preventDefault()
-    if(e instanceof TouchEvent){
+    let hasEvent
+    try {
+      if (e instanceof TouchEvent) {
+        hasEvent = true
+      }
+    } catch (error) {
+      hasEvent = false
+    }
+    if(hasEvent){
       this.dealPoint(this.state.bodies.pointX,this.state.bodies.pointY,1)
     }else{
       this.dealPoint(e.offsetX,e.offsetY,1)
@@ -285,7 +316,6 @@ class ClassBoard {
     // document.getElementById('img').src = baseImg
     // reset board
     
-    console.log('save canvas', this.state.boardlist, this.state.boardIndex)
   }
    //橡皮檫
   earseLine(start, controlPoint, endPoint) {
@@ -415,6 +445,16 @@ class ClassBoard {
     this.state.board.context.drawImage( nextImage, 0, 0, nextImage.width, nextImage.height);
     }
   }
+  
+  renderMenus(menus) {
+    if (this.isMobile) {
+      this.state.menuPen = menus
+      return
+    }
+    const leftMenu = this.state.menuPen.slice(0, this.state.menus.length -2)
+    this.state.menuPen = [...leftMenu, ...this.state.baseMenus]
+  }
+
   boardTool(index) {
     console.log('index',index)
     switch (index) {
@@ -440,11 +480,12 @@ class ClassBoard {
         // this.menus = Object.assign([], this.menus,this.menuPen,lasetItem)
          this.state.bodies.isEraser = false
         if (!this.isOpen) {
-          this.state.menuPen = this.state.baseMenus
+          this.renderMenus(this.state.baseMenus)
           this.isOpen = true;
         } else {
           // [{text: "画笔", key: 5, className:"hyfont ketang-huabi"}, ...this.state.menuPen, ...lasetItem]
-          this.state.menuPen = this.state.menus
+          // this.state.menuPen = this.state.menus
+          this.renderMenus(this.state.menus)
           this.isOpen = false;
         }
         document.getElementById('canvas').setAttribute('class','pencil')
@@ -456,22 +497,34 @@ class ClassBoard {
         return;
       case 7:
         this.setColor('red')
+        this.state.menuPen = this.state.menus
+        this.isOpen = false;
         break
       case 8:
         this.setColor('white')
+        this.state.menuPen = this.state.menus
+        this.isOpen = false;
         break
       case 9:
         this.setColor('green')
+        this.state.menuPen = this.state.menus
+        this.isOpen = false;
         break
       case 10: 
         this.state.bodies.lineSize= 1
+        this.state.menuPen = this.state.menus
+        this.isOpen = false;
         break
       case 11: 
         this.state.bodies.lineSize = 3
+        this.state.menuPen = this.state.menus
+        this.isOpen = false;
         break
       case 12: 
         this.state.bodies.lineSize = 5
-        return
+        this.state.menuPen = this.state.menus
+        this.isOpen = false;
+        break
       default:
         break
     }
