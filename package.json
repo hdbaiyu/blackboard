@@ -1,0 +1,45 @@
+{
+  "author":{
+     "name" : "baiyu",
+      "email" : "baiyu@ihayun.com",
+      "url" : "http://github.com/hdbaiyu"
+  },
+  "name": "blackboard",
+  "version": "0.0.42",
+  "files": ["dist"],
+  "main": "./dist/blackboard.umd.js",
+  "module": "./dist/blackboard.es.js",
+  "private": false,
+  "scripts": {
+    "js": "js or vue, react"
+  },
+  "dependencies": {
+
+  },
+  "devDependencies": {
+
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}
